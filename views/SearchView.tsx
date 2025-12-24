@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Info, Bookmark, BookOpen } from 'lucide-react';
+import { Search, Bookmark, CheckCircle } from 'lucide-react';
 import { db } from '../db';
 import { Question } from '../types';
 
@@ -43,14 +43,14 @@ const SearchView: React.FC = () => {
           <div key={q.id} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm animate-fadeIn">
             <div className="flex items-start justify-between mb-3">
               <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded">
-                {q.chapter_name}
+                {q.chapter}
               </span>
               {q.isBookmarked && <Bookmark size={16} className="text-amber-500 fill-current" />}
             </div>
-            <h4 className="text-lg font-medium leading-relaxed mb-4">{q.question_text}</h4>
+            <h4 className="text-lg font-medium leading-relaxed mb-4">{q.text}</h4>
             <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800">
                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
-                 <CheckCircle size={14} /> Correct Answer: {q.options[q.correct_option_index]}
+                 <CheckCircle size={14} /> Correct Answer: {q.options[q.correctIndex]}
                </div>
                <p className="text-sm text-gray-600 dark:text-gray-400 italic">
                  {q.explanation}
@@ -77,9 +77,5 @@ const SearchView: React.FC = () => {
     </div>
   );
 };
-
-const CheckCircle = ({ size }: { size: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-);
 
 export default SearchView;

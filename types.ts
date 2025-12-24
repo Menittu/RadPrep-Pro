@@ -1,11 +1,11 @@
 
 export interface Question {
   id: number;
-  question_text: string;
+  chapter: string;
+  text: string;
   options: string[];
-  correct_option_index: number;
+  correctIndex: number;
   explanation: string;
-  chapter_name: string;
   isBookmarked?: boolean;
 }
 

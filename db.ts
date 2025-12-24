@@ -1,41 +1,45 @@
-
-import { Dexie, Table } from 'dexie';
+import Dexie, { Table } from 'dexie';
 import { Question, TestResult, TestSession } from './types';
 
 export class RadPrepDatabase extends Dexie {
   questions!: Table<Question>;
   results!: Table<TestResult>;
-  sessions!: Table<TestSession & { id: string }>; // Persistent session storage
+  sessions!: Table<TestSession & { id: string }>;
 
   constructor() {
     super('RadPrepDB');
-    // Fix: Using named import for Dexie ensures 'version' and other inherited methods are correctly typed in TypeScript.
-    this.version(2).stores({
-      questions: '++id, question_text, chapter_name, isBookmarked',
+    // Defining database version and schema. Using standard Dexie versioning.
+    this.version(3).stores({
+      questions: '++id, text, chapter, isBookmarked',
       results: '++id, date, chapterName',
-      sessions: 'id, chapterName' // 'id' will be a constant like 'active_test'
+      sessions: 'id, chapterName'
     });
   }
 
-  async addQuestions(chapterName: string, questions: any[]) {
-    const formattedQuestions = questions.map((q) => ({
-      ...q,
-      chapter_name: chapterName,
-      isBookmarked: false
-    }));
+  async addQuestions(fallbackChapterName: string, questions: any[]) {
+    const formattedQuestions = questions.map((q) => {
+      // Mapping fields to support both old and new formats during import
+      return {
+        id: q.id,
+        chapter: q.chapter || q.chapter_name || fallbackChapterName,
+        text: q.text || q.question_text,
+        options: q.options,
+        correctIndex: q.correctIndex !== undefined ? q.correctIndex : q.correct_option_index,
+        explanation: q.explanation,
+        isBookmarked: false
+      };
+    });
     return await this.questions.bulkAdd(formattedQuestions);
   }
 
   async getChapters(): Promise<string[]> {
     const questions = await this.questions.toArray();
-    const chapters = new Set<string>(questions.map(q => q.chapter_name));
+    const chapters = new Set<string>(questions.map(q => q.chapter));
     return Array.from(chapters);
   }
 
   async deleteChapter(chapterName: string) {
-    // Delete all questions for this chapter
-    await this.questions.where('chapter_name').equals(chapterName).delete();
-    // If there's an active session for this chapter, clear it
+    await this.questions.where('chapter').equals(chapterName).delete();
     const session = await this.getActiveSession();
     if (session && session.chapterName === chapterName) {
       await this.clearActiveSession();
@@ -51,18 +55,18 @@ export class RadPrepDatabase extends Dexie {
 
   async searchQuestions(query: string): Promise<Question[]> {
     return await this.questions
-      .filter(q => q.question_text.toLowerCase().includes(query.toLowerCase()))
+      .filter(q => q.text.toLowerCase().includes(query.toLowerCase()))
       .toArray();
   }
 
-  // Session Management
   async saveActiveSession(session: TestSession) {
-    return await this.sessions.put({ ...session, id: 'active_test' });
+    // Casting to any to handle the intersection type with id for the primary key
+    return await this.sessions.put({ ...session, id: 'active_test' } as any);
   }
 
   async getActiveSession(): Promise<TestSession | null> {
     const session = await this.sessions.get('active_test');
-    return session || null;
+    return (session as unknown as TestSession) || null;
   }
 
   async clearActiveSession() {

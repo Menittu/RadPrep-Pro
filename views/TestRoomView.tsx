@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bookmark, CheckCircle, Info, Flag, Send, Lightbulb, TrendingUp, Trophy } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bookmark, Info, Send, Lightbulb, TrendingUp, Trophy } from 'lucide-react';
 import { db } from '../db';
 import { Question, TestSession, TestMode } from '../types';
 
@@ -61,7 +61,6 @@ const TestRoomView: React.FC = () => {
   const selectedOption = session.selectedAnswers[currentQ.id];
   const showFeedback = session.mode === TestMode.PRACTICE && selectedOption !== undefined;
 
-  // Motivation system
   const motivation = MOTIVATIONAL_MESSAGES.slice().reverse().find(m => progress >= m.threshold)?.text || "Focus & Precision";
 
   const handleSelect = async (idx: number) => {
@@ -107,7 +106,7 @@ const TestRoomView: React.FC = () => {
       const ans = session.selectedAnswers[q.id];
       if (ans !== undefined) {
         attemptedCount++;
-        if (ans === q.correct_option_index) correctCount++;
+        if (ans === q.correctIndex) correctCount++;
       }
     });
 
@@ -130,7 +129,6 @@ const TestRoomView: React.FC = () => {
 
   return (
     <div className="flex flex-col space-y-6 pb-20" ref={scrollRef}>
-      {/* Test Control Header */}
       <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-5 rounded-[2rem] shadow-xl border border-gray-100 dark:border-slate-800 sticky top-20 z-30 transition-all">
         <div className="flex flex-wrap gap-4 items-center justify-between mb-5">
           <div className="flex items-center gap-4">
@@ -142,25 +140,15 @@ const TestRoomView: React.FC = () => {
               <div className="text-sm font-black text-slate-800 dark:text-white truncate">{session.chapterName}</div>
             </div>
           </div>
-          
           <div className="flex items-center gap-3">
-            <button 
-              onClick={toggleBookmark}
-              className={`p-3.5 rounded-2xl transition-all ${currentQ.isBookmarked ? 'bg-amber-100 text-amber-600 shadow-md shadow-amber-500/10' : 'bg-slate-100 text-slate-400 dark:bg-slate-800'}`}
-              title="Bookmark Question"
-            >
+            <button onClick={toggleBookmark} className={`p-3.5 rounded-2xl transition-all ${currentQ.isBookmarked ? 'bg-amber-100 text-amber-600 shadow-md shadow-amber-500/10' : 'bg-slate-100 text-slate-400 dark:bg-slate-800'}`}>
               <Bookmark size={22} fill={currentQ.isBookmarked ? 'currentColor' : 'none'} />
             </button>
-            <button 
-              onClick={finishTest} 
-              className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3.5 rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20"
-            >
+            <button onClick={finishTest} className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3.5 rounded-2xl font-black hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20">
               <Send size={20} /> <span className="hidden sm:inline">Submit Test</span>
             </button>
           </div>
         </div>
-        
-        {/* Progress Bar & Motivation */}
         <div className="space-y-3">
           <div className="relative w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
             <div className="absolute top-0 left-0 bg-gradient-to-r from-indigo-500 to-violet-600 h-full transition-all duration-700 rounded-full" style={{ width: `${progress}%` }}></div>
@@ -172,54 +160,41 @@ const TestRoomView: React.FC = () => {
               </div>
               <div className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-800">
                 <Trophy size={14} className="text-amber-500" />
-                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-300 uppercase tracking-wider italic">
-                  {motivation}
-                </span>
+                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-300 uppercase tracking-wider italic">{motivation}</span>
               </div>
           </div>
         </div>
       </div>
 
-      {/* Main MCQ Content */}
       <div className="animate-slideUp">
         <div className="bg-white dark:bg-slate-900 p-8 md:p-14 rounded-[3rem] shadow-2xl border border-gray-100 dark:border-slate-800 relative overflow-hidden">
-          {/* Background Decor */}
           <div className="absolute top-0 right-0 p-12 text-indigo-500/5 pointer-events-none select-none">
             <Lightbulb size={300} strokeWidth={1} />
           </div>
-
           <div className="relative z-10">
             <div className="mb-10">
                <span className="px-4 py-1.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-full text-xs font-black tracking-widest uppercase border border-indigo-100 dark:border-indigo-800">
                  Question {currentIdx + 1}
                </span>
                <h2 className="text-2xl md:text-4xl font-bold leading-tight mt-6 text-slate-800 dark:text-white">
-                 {currentQ.question_text}
+                 {currentQ.text}
                </h2>
             </div>
-
             <div className="grid gap-5">
               {currentQ.options.map((option, idx) => {
                 let stateStyle = "border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 bg-slate-50/40 dark:bg-slate-800/20";
-                
                 if (selectedOption === idx) {
                    stateStyle = "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-900/40 dark:border-indigo-500 ring-2 ring-indigo-500/20 shadow-lg";
                 }
-                
                 if (showFeedback) {
-                  if (idx === currentQ.correct_option_index) {
+                  if (idx === currentQ.correctIndex) {
                     stateStyle = "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 dark:border-emerald-400 ring-4 ring-emerald-500/10 shadow-lg shadow-emerald-500/10 scale-[1.02]";
                   } else if (selectedOption === idx) {
                     stateStyle = "border-rose-500 bg-rose-50 dark:bg-rose-900/30 dark:border-rose-400 ring-4 ring-rose-500/10 shadow-lg shadow-rose-500/10";
                   }
                 }
-
                 return (
-                  <button
-                    key={idx}
-                    onClick={() => handleSelect(idx)}
-                    className={`group w-full flex items-start gap-6 p-6 md:p-8 rounded-[2rem] border-2 text-left transition-all duration-300 transform active:scale-[0.98] ${stateStyle}`}
-                  >
+                  <button key={idx} onClick={() => handleSelect(idx)} className={`group w-full flex items-start gap-6 p-6 md:p-8 rounded-[2rem] border-2 text-left transition-all duration-300 transform active:scale-[0.98] ${stateStyle}`}>
                     <span className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl border-2 transition-all ${selectedOption === idx ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                       {String.fromCharCode(65 + idx)}
                     </span>
@@ -228,12 +203,8 @@ const TestRoomView: React.FC = () => {
                 );
               })}
             </div>
-
             {showFeedback && (
-              <div className="mt-14 p-10 bg-indigo-50/50 dark:bg-indigo-900/20 rounded-[2.5rem] border border-indigo-100 dark:border-indigo-800/50 animate-fadeIn relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-8 text-indigo-500/10 opacity-20 group-hover:opacity-40 transition-opacity">
-                  <Info size={120} />
-                </div>
+              <div className="mt-14 p-10 bg-indigo-50/50 dark:bg-indigo-900/20 rounded-[2.5rem] border border-indigo-100 dark:border-indigo-800/50 animate-fadeIn relative overflow-hidden">
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-6 text-indigo-700 dark:text-indigo-300 font-black text-xl uppercase tracking-widest">
                     <Info size={28} /> Explanation
@@ -246,21 +217,11 @@ const TestRoomView: React.FC = () => {
             )}
           </div>
         </div>
-
-        {/* Navigation Bar */}
         <div className="flex items-center gap-6 mt-10">
-          <button 
-            onClick={prev} 
-            disabled={currentIdx === 0}
-            className="flex-1 flex items-center justify-center gap-3 py-6 rounded-[2rem] bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 font-black text-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-xl shadow-slate-200/50 dark:shadow-none active:scale-95"
-          >
+          <button onClick={prev} disabled={currentIdx === 0} className="flex-1 flex items-center justify-center gap-3 py-6 rounded-[2rem] bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 font-black text-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-xl active:scale-95">
             <ChevronLeft size={28} /> Prev
           </button>
-          <button 
-            onClick={next} 
-            disabled={currentIdx === total - 1}
-            className="flex-1 flex items-center justify-center gap-3 py-6 rounded-[2rem] bg-indigo-600 text-white font-black text-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-600/30 active:scale-95"
-          >
+          <button onClick={next} disabled={currentIdx === total - 1} className="flex-1 flex items-center justify-center gap-3 py-6 rounded-[2rem] bg-indigo-600 text-white font-black text-xl disabled:opacity-30 disabled:cursor-not-allowed hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-600/30 active:scale-95">
             Next <ChevronRight size={28} />
           </button>
         </div>
