@@ -1,50 +1,61 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#00696B">
     <title>RadPrep Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --md-sys-color-primary: #00696B;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #9CF1F3;
+            --md-sys-color-surface: #F4FBFA;
+            --md-sys-color-on-surface: #191C1C;
+            --md-sys-color-surface-variant: #DAE4E4;
+        }
+
         body { 
           font-family: 'Inter', sans-serif;
           -webkit-tap-highlight-color: transparent;
           scroll-behavior: smooth;
         }
-        .dark { background-color: #0f172a; color: #f8fafc; }
+        
+        /* Material You Specific Transitions */
+        .transition-m3 { transition: all 0.3s cubic-bezier(0.2, 0, 0, 1); }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
-        .animate-slideUp { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* M3 Linear Progress Animation */
+        .progress-bar-fill {
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
     </style>
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "recharts": "https://esm.sh/recharts@^3.6.0",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
     "dexie": "https://esm.sh/dexie@^4.2.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
     "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
-    "vite": "https://esm.sh/vite@^7.3.0"
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
 </script>
 </head>
-<body class="transition-colors duration-200 antialiased overflow-x-hidden">
+<body class="transition-colors duration-200 antialiased overflow-x-hidden bg-[#F4FBFA] dark:bg-[#0E1414] text-[#191C1C] dark:text-[#E0E3E3]">
     <div id="root"></div>
-    <!-- Standard entry point for Vite/Bundlers -->
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>

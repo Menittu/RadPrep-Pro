@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Bookmark, CheckCircle } from 'lucide-react';
 import { db } from '../db';
@@ -34,25 +33,25 @@ const SearchView: React.FC = () => {
           placeholder="Search keywords (e.g. 'Absorbed Dose', 'ICRP')..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm transition-all"
+          className="w-full pl-12 pr-4 py-4 rounded-full bg-white dark:bg-[#191C1C] border border-[#DAE4E4] dark:border-[#3F4948] focus:ring-2 focus:ring-[#00696B] outline-none shadow-sm transition-all"
         />
       </div>
 
       <div className="space-y-4">
         {results.map(q => (
-          <div key={q.id} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm animate-fadeIn">
+          <div key={q.id} className="bg-white dark:bg-[#191C1C] p-6 rounded-[28px] border border-[#DAE4E4] dark:border-[#3F4948] shadow-sm animate-fadeIn">
             <div className="flex items-start justify-between mb-3">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#00696B] bg-[#9CF1F3] dark:bg-[#3F4948] px-3 py-1 rounded-full">
                 {q.chapter}
               </span>
               {q.isBookmarked && <Bookmark size={16} className="text-amber-500 fill-current" />}
             </div>
             <h4 className="text-lg font-medium leading-relaxed mb-4">{q.text}</h4>
-            <div className="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800">
+            <div className="p-4 bg-gray-50 dark:bg-[#0E1414] rounded-2xl border border-[#DAE4E4] dark:border-[#3F4948]">
                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
-                 <CheckCircle size={14} /> Correct Answer: {q.options[q.correctIndex]}
+                 <CheckCircle size={14} /> Correct: {q.options[q.correctIndex]}
                </div>
-               <p className="text-sm text-gray-600 dark:text-gray-400 italic">
+               <p className="text-sm text-[#3F4948] dark:text-[#BEC8C8] italic">
                  {q.explanation}
                </p>
             </div>
@@ -61,16 +60,16 @@ const SearchView: React.FC = () => {
 
         {query.length >= 2 && results.length === 0 && !searching && (
           <div className="text-center py-12 text-gray-500">
-            No questions found matching "{query}"
+            No questions found for "{query}"
           </div>
         )}
 
         {query.length < 2 && (
           <div className="text-center py-12">
-            <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-400 mb-4">
+            <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-[#191C1C] rounded-full flex items-center justify-center text-gray-400 mb-4">
               <Search size={32} />
             </div>
-            <p className="text-gray-500">Enter at least 2 characters to search across all chapters</p>
+            <p className="text-gray-500">Enter keywords to search</p>
           </div>
         )}
       </div>

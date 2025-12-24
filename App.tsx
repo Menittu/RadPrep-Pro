@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Menu, X, Sun, Moon, Home, BookOpen, Search, BarChart2, Settings, Download, Trash2, Bookmark } from 'lucide-react';
+import { Menu, X, Sun, Moon, Home, BookOpen, Search, BarChart2, Settings } from 'lucide-react';
 import HomeView from './views/HomeView';
 import TestRoomView from './views/TestRoomView';
 import ChapterManager from './views/ChapterManager';
@@ -14,6 +13,7 @@ const App: React.FC = () => {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chapters, setChapters] = useState<string[]>([]);
+  const [progress, setProgress] = useState<{current: number, total: number} | null>(null);
 
   useEffect(() => {
     if (darkMode) {
@@ -24,6 +24,15 @@ const App: React.FC = () => {
       localStorage.setItem('theme', 'light');
     }
   }, [darkMode]);
+
+  // Listen for progress updates from the test view
+  useEffect(() => {
+    const handleProgress = (e: any) => {
+      setProgress(e.detail);
+    };
+    window.addEventListener('testProgressUpdate', handleProgress);
+    return () => window.removeEventListener('testProgressUpdate', handleProgress);
+  }, []);
 
   const loadChapters = async () => {
     const list = await db.getChapters();
@@ -38,52 +47,66 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <div className={`min-h-screen flex flex-col ${darkMode ? 'dark text-gray-100 bg-gray-900' : 'bg-gray-50 text-gray-900'}`}>
+      <div className={`min-h-screen flex flex-col transition-m3`}>
         
-        {/* Mobile Header */}
-        <header className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm px-4 py-3 flex items-center justify-between md:px-8">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(true)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-              <Menu size={24} />
+        {/* M3 Top App Bar */}
+        <header className="h-16 sticky top-0 z-50 bg-[#F4FBFA]/90 dark:bg-[#0E1414]/90 backdrop-blur-md px-4 flex flex-col justify-center border-b border-[#DAE4E4] dark:border-[#3F4948]">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <button onClick={() => setSidebarOpen(true)} className="p-3 hover:bg-[#DAE4E4] dark:hover:bg-[#3F4948] rounded-full transition-m3">
+                <Menu size={24} />
+              </button>
+              <Link to="/" className="text-xl font-semibold text-[#00696B] dark:text-[#80D4D6] tracking-tight">RadPrep Pro</Link>
+            </div>
+            <button onClick={() => setDarkMode(!darkMode)} className="p-3 hover:bg-[#DAE4E4] dark:hover:bg-[#3F4948] rounded-full transition-m3">
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-            <Link to="/" className="text-xl font-bold text-indigo-600 dark:text-indigo-400">RadPrep Pro</Link>
           </div>
-          <button onClick={() => setDarkMode(!darkMode)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+
+          {/* Integrated Title Bar Progress Indicator */}
+          {progress && (
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-[#9CF1F3] dark:bg-[#3F4948]">
+              <div 
+                className="h-full bg-[#00696B] dark:bg-[#80D4D6] progress-bar-fill shadow-[0_0_8px_rgba(0,105,107,0.4)]"
+                style={{ width: `${(progress.current / progress.total) * 100}%` }}
+              ></div>
+            </div>
+          )}
         </header>
 
         {/* Sidebar Backdrop */}
         {sidebarOpen && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={closeSidebar}></div>
+          <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm" onClick={closeSidebar}></div>
         )}
 
-        {/* Sidebar */}
-        <aside className={`fixed top-0 left-0 bottom-0 z-50 w-72 bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-          <div className="p-4 flex items-center justify-between border-b dark:border-gray-700">
-            <h2 className="font-bold text-lg">Menu</h2>
-            <button onClick={closeSidebar} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><X size={20} /></button>
+        {/* M3 Navigation Drawer */}
+        <aside className={`fixed top-0 left-0 bottom-0 z-50 w-80 bg-[#F4FBFA] dark:bg-[#0E1414] shadow-2xl transform transition-transform duration-400 ease-[cubic-bezier(0.2,0,0,1)] ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} rounded-r-[28px]`}>
+          <div className="h-16 px-6 flex items-center justify-between border-b dark:border-[#3F4948]">
+            <h2 className="font-medium text-sm text-[#3F4948] dark:text-[#BEC8C8] uppercase tracking-wider">Menu</h2>
+            <button onClick={closeSidebar} className="p-2 hover:bg-[#DAE4E4] dark:hover:bg-[#3F4948] rounded-full"><X size={20} /></button>
           </div>
-          <nav className="p-4 space-y-2">
-            <SidebarItem icon={<Home size={20}/>} label="Dashboard" to="/" onClick={closeSidebar} />
-            <SidebarItem icon={<Search size={20}/>} label="Search MCQs" to="/search" onClick={closeSidebar} />
-            <SidebarItem icon={<BarChart2 size={20}/>} label="Analytics" to="/analytics" onClick={closeSidebar} />
-            <SidebarItem icon={<Settings size={20}/>} label="Chapters" to="/manage" onClick={closeSidebar} />
+          <nav className="p-4 space-y-1">
+            <SidebarItem icon={<Home size={22}/>} label="Dashboard" to="/" onClick={closeSidebar} />
+            <SidebarItem icon={<Search size={22}/>} label="Search Engine" to="/search" onClick={closeSidebar} />
+            <SidebarItem icon={<BarChart2 size={22}/>} label="Analytics" to="/analytics" onClick={closeSidebar} />
+            <SidebarItem icon={<Settings size={22}/>} label="Manage Chapters" to="/manage" onClick={closeSidebar} />
             
-            <div className="pt-4 mt-4 border-t dark:border-gray-700">
-              <p className="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Chapters</p>
-              {chapters.length === 0 ? (
-                <p className="px-3 text-sm text-gray-400 italic">No chapters imported</p>
-              ) : (
-                chapters.map(ch => (
-                  <SidebarItem key={ch} icon={<BookOpen size={18}/>} label={ch} to={`/test-config/${encodeURIComponent(ch)}`} onClick={closeSidebar} />
-                ))
-              )}
+            <div className="pt-6 mt-6 border-t dark:border-[#3F4948]">
+              <p className="px-4 mb-4 text-xs font-semibold text-[#00696B] dark:text-[#80D4D6] uppercase tracking-widest">Chapters</p>
+              <div className="space-y-1 max-h-[50vh] overflow-y-auto no-scrollbar">
+                {chapters.length === 0 ? (
+                  <p className="px-4 text-sm text-gray-400 italic">No data found.</p>
+                ) : (
+                  chapters.map(ch => (
+                    <SidebarItem key={ch} icon={<BookOpen size={20}/>} label={ch} to={`/test-config/${encodeURIComponent(ch)}`} onClick={closeSidebar} />
+                  ))
+                )}
+              </div>
             </div>
           </nav>
         </aside>
 
-        <main className="flex-1 container mx-auto px-4 py-6 max-w-4xl">
+        <main className="flex-1 container mx-auto px-4 py-6 md:py-10 max-w-4xl">
           <Routes>
             <Route path="/" element={<HomeView />} />
             <Route path="/search" element={<SearchView />} />
@@ -106,10 +129,10 @@ const SidebarItem: React.FC<{ icon: React.ReactNode, label: string, to: string, 
     <Link 
       to={to} 
       onClick={onClick}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${active ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+      className={`flex items-center gap-4 px-4 py-3 rounded-full transition-m3 ${active ? 'bg-[#9CF1F3] text-[#002021] dark:bg-[#3F4948] dark:text-[#9CF1F3]' : 'text-[#3F4948] dark:text-[#BEC8C8] hover:bg-[#DAE4E4] dark:hover:bg-[#3F4948]/50'}`}
     >
-      {icon}
-      <span className="font-medium text-sm">{label}</span>
+      <div className={active ? 'text-[#00696B] dark:text-[#80D4D6]' : ''}>{icon}</div>
+      <span className="font-medium text-sm truncate">{label}</span>
     </Link>
   );
 };

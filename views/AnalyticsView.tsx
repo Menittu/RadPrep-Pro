@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Target, TrendingUp, Award, Clock } from 'lucide-react';
 import { db } from '../db';
 import { TestResult } from '../types';
@@ -48,7 +47,7 @@ const AnalyticsView: React.FC = () => {
           sub="Average score"
         />
         <MetricCard 
-          icon={<TrendingUp className="text-indigo-500" />} 
+          icon={<TrendingUp className="text-[#00696B]" />} 
           label="Total Sessions" 
           value={results.length.toString()} 
           sub="Completed tests"
@@ -61,9 +60,9 @@ const AnalyticsView: React.FC = () => {
         />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xl">
+      <div className="bg-white dark:bg-[#191C1C] p-6 rounded-[28px] border border-[#DAE4E4] dark:border-[#3F4948] shadow-sm">
         <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <Target className="text-indigo-600" /> Chapter-wise Accuracy
+            <Target className="text-[#00696B]" /> Chapter-wise Accuracy
         </h3>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -73,11 +72,11 @@ const AnalyticsView: React.FC = () => {
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12 }} domain={[0, 100]} />
               <Tooltip 
                 cursor={{ fill: 'transparent' }}
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
               />
               <Bar dataKey="accuracy" radius={[8, 8, 0, 0]} barSize={40}>
                 {chapterStats.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.accuracy > 70 ? '#10b981' : entry.accuracy > 40 ? '#6366f1' : '#f43f5e'} />
+                  <Cell key={`cell-${index}`} fill={entry.accuracy > 70 ? '#10b981' : entry.accuracy > 40 ? '#00696B' : '#f43f5e'} />
                 ))}
               </Bar>
             </BarChart>
@@ -88,18 +87,18 @@ const AnalyticsView: React.FC = () => {
       <div className="space-y-4">
         <h3 className="text-xl font-bold">Recent History</h3>
         {results.map((res, i) => (
-          <div key={i} className="bg-white dark:bg-gray-800 p-4 rounded-2xl flex items-center justify-between border border-gray-100 dark:border-gray-700 shadow-sm">
+          <div key={i} className="bg-white dark:bg-[#191C1C] p-4 rounded-2xl flex items-center justify-between border border-[#DAE4E4] dark:border-[#3F4948] shadow-sm">
              <div>
                 <h4 className="font-bold text-sm">{res.chapterName}</h4>
-                <p className="text-xs text-gray-500">{new Date(res.date).toLocaleString()} • {res.mode} Mode</p>
+                <p className="text-xs text-[#3F4948] dark:text-[#BEC8C8]">{new Date(res.date).toLocaleString()} • {res.mode} Mode</p>
              </div>
-             <div className={`px-4 py-1 rounded-full font-bold text-sm ${res.percentage > 70 ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'}`}>
+             <div className={`px-4 py-1 rounded-full font-bold text-sm ${res.percentage > 70 ? 'bg-emerald-100 text-emerald-700' : 'bg-[#9CF1F3] text-[#002021]'}`}>
                 {res.percentage}%
              </div>
           </div>
         ))}
         {results.length === 0 && (
-          <div className="text-center py-12 text-gray-400 italic bg-white dark:bg-gray-800 rounded-2xl border border-dashed dark:border-gray-700">
+          <div className="text-center py-12 text-gray-400 italic bg-white dark:bg-[#191C1C] rounded-[28px] border border-dashed dark:border-[#3F4948]">
             Take your first test to see analytics!
           </div>
         )}
@@ -109,10 +108,10 @@ const AnalyticsView: React.FC = () => {
 };
 
 const MetricCard = ({ icon, label, value, sub }: { icon: React.ReactNode, label: string, value: string, sub: string }) => (
-  <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
+  <div className="bg-white dark:bg-[#191C1C] p-6 rounded-[28px] border border-[#DAE4E4] dark:border-[#3F4948] shadow-sm">
     <div className="flex items-center gap-3 mb-4">
-      <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-2xl">{icon}</div>
-      <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">{label}</span>
+      <div className="p-3 bg-gray-50 dark:bg-[#0E1414] rounded-full">{icon}</div>
+      <span className="text-sm font-bold text-[#3F4948] dark:text-[#BEC8C8] uppercase tracking-wider">{label}</span>
     </div>
     <div className="text-3xl font-bold mb-1">{value}</div>
     <div className="text-xs text-gray-400">{sub}</div>

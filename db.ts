@@ -1,5 +1,8 @@
-// Fix: Use named import for Dexie to ensure TypeScript correctly resolves inherited methods like version()
-import { Dexie, type Table } from 'dexie';
+
+
+// Fix: Use default import for Dexie to ensure TypeScript correctly resolves inherited methods like version()
+import Dexie from 'dexie';
+import type { Table } from 'dexie';
 import { Question, TestResult, TestSession } from './types';
 
 export class RadPrepDatabase extends Dexie {
@@ -10,7 +13,7 @@ export class RadPrepDatabase extends Dexie {
   constructor() {
     super('RadPrepDB');
     // Defining database version and schema. Using standard Dexie versioning.
-    // Fix: Inherited version() method is now properly recognized thanks to named Dexie import
+    // Fix: Inherited version() method is now properly recognized thanks to correct Dexie import style
     this.version(3).stores({
       questions: '++id, text, chapter, isBookmarked',
       results: '++id, date, chapterName',
