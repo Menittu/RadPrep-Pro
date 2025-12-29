@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Sparkles, Brain, Loader2, CheckCircle2, AlertCircle, ArrowRight, Save, Wand2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Brain, Loader2, CheckCircle2, AlertCircle, Save, Wand2, Key, ExternalLink } from 'lucide-react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { db } from '../db';
 
@@ -8,6 +8,7 @@ interface AIGeneratorViewProps {
 }
 
 const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
+  const [hasKey, setHasKey] = useState<boolean | null>(null);
   const [topic, setTopic] = useState('');
   const [count, setCount] = useState(5);
   const [loading, setLoading] = useState(false);
@@ -15,7 +16,27 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // Fix: Generate questions using the 'gemini-3-pro-preview' model for complex technical/STEM tasks.
+  useEffect(() => {
+    const checkKey = async () => {
+      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+        const selected = await window.aistudio.hasSelectedApiKey();
+        setHasKey(selected);
+      } else {
+        // Fallback for environments where key selection isn't strictly required through this API
+        setHasKey(true);
+      }
+    };
+    checkKey();
+  }, []);
+
+  const handleOpenKeySelector = async () => {
+    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+      await window.aistudio.openSelectKey();
+      // Assume success after triggering dialog as per race condition guidelines
+      setHasKey(true);
+    }
+  };
+
   const generateQuestions = async () => {
     if (!topic.trim()) {
       setError('Please enter a research topic.');
@@ -28,6 +49,7 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
     setGeneratedQuestions([]);
 
     try {
+      // Create fresh instance to ensure up-to-date API key
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `Generate ${count} professional radiotherapy recruitment exam multiple-choice questions for the chapter: "${topic}". 
       Ensure questions follow medical standards (ICRP, ICRU, IAEA). 
@@ -64,7 +86,13 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
       setGeneratedQuestions(data);
     } catch (err: any) {
       console.error(err);
-      setError('Failed to generate questions. Please check your connection or try a different topic.');
+      const errorMessage = err.message || '';
+      if (errorMessage.includes("Requested entity was not found")) {
+        setError('API configuration issue. Please re-select your API key project.');
+        setHasKey(false); // Reset key selection state to prompt re-selection
+      } else {
+        setError('Connection Error: Failed to generate questions. Please check your network or try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -86,6 +114,34 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
       setLoading(false);
     }
   };
+
+  if (hasKey === false) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-8 animate-fadeIn text-center max-w-lg mx-auto px-4">
+        <div className="w-24 h-24 bg-[#9CF1F3] dark:bg-[#3F4948] rounded-[32px] flex items-center justify-center text-[#00696B] dark:text-[#80D4D6] shadow-2xl">
+          <Key size={48} />
+        </div>
+        <div className="space-y-4">
+          <h1 className="text-3xl font-black tracking-tight">AI Connection Required</h1>
+          <p className="text-[#3F4948] dark:text-[#BEC8C8] font-medium leading-relaxed">
+            To use the AI Research Lab with Gemini 3 Pro, you must select a valid API key from a paid Google Cloud project.
+          </p>
+          <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-2xl border border-amber-200 dark:border-amber-800 flex items-start gap-3 text-left">
+            <AlertCircle size={20} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-800 dark:text-amber-300">
+              Ensure your project has billing enabled. Visit the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="underline font-bold inline-flex items-center gap-1">billing docs <ExternalLink size={10}/></a> for details.
+            </p>
+          </div>
+        </div>
+        <button 
+          onClick={handleOpenKeySelector}
+          className="w-full bg-[#00696B] hover:bg-[#005254] text-white py-5 rounded-2xl font-bold transition-all shadow-xl shadow-[#00696B]/30 flex items-center justify-center gap-3 text-lg"
+        >
+          Connect to Google AI Studio
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fadeIn pb-12 max-w-3xl mx-auto">
