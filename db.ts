@@ -1,8 +1,7 @@
-
-// Fix: Use named import for Dexie to ensure the class and its methods like version() are correctly inherited and recognized by TypeScript
 import { Dexie, type Table } from 'dexie';
 import { Question, TestResult, TestSession } from './types';
 
+// Fix: Use named export for Dexie to ensure proper type inheritance and availability of methods like version().
 export class RadPrepDatabase extends Dexie {
   questions!: Table<Question>;
   results!: Table<TestResult>;
@@ -10,8 +9,7 @@ export class RadPrepDatabase extends Dexie {
 
   constructor() {
     super('RadPrepDB');
-    // Defining database version and schema. Using standard Dexie versioning.
-    // Fix: Inherited version() method is properly recognized with named Dexie import
+    // Dexie schema definition using versioning for data migrations and table setup.
     this.version(3).stores({
       questions: '++id, text, chapter, isBookmarked',
       results: '++id, date, chapterName',
@@ -19,9 +17,9 @@ export class RadPrepDatabase extends Dexie {
     });
   }
 
+  // Helper to bulk add questions with a fallback chapter name if none is provided in the source.
   async addQuestions(fallbackChapterName: string, questions: any[]) {
     const formattedQuestions = questions.map((q) => {
-      // Mapping fields to support both old and new formats during import
       return {
         id: q.id,
         chapter: q.chapter || q.chapter_name || fallbackChapterName,
@@ -63,7 +61,6 @@ export class RadPrepDatabase extends Dexie {
   }
 
   async saveActiveSession(session: TestSession) {
-    // Casting to any to handle the intersection type with id for the primary key
     return await this.sessions.put({ ...session, id: 'active_test' } as any);
   }
 

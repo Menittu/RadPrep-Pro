@@ -15,6 +15,7 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  // Fix: Generate questions using the 'gemini-3-pro-preview' model for complex technical/STEM tasks.
   const generateQuestions = async () => {
     if (!topic.trim()) {
       setError('Please enter a research topic.');
@@ -34,7 +35,7 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
       The explanation should be conceptual and concise.`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3-pro-preview",
         contents: prompt,
         config: {
           systemInstruction: "You are a senior clinical oncologist and radiotherapy examiner. You provide high-yield, technically accurate MCQs for professional RTT and Medical Physics exams.",
