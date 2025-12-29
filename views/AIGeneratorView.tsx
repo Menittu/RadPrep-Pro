@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Brain, Loader2, CheckCircle2, AlertCircle, Save, Wand2, Key, ExternalLink } from 'lucide-react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -22,7 +23,6 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
         const selected = await window.aistudio.hasSelectedApiKey();
         setHasKey(selected);
       } else {
-        // Fallback for environments where key selection isn't strictly required through this API
         setHasKey(true);
       }
     };
@@ -32,7 +32,6 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
   const handleOpenKeySelector = async () => {
     if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
       await window.aistudio.openSelectKey();
-      // Assume success after triggering dialog as per race condition guidelines
       setHasKey(true);
     }
   };
@@ -49,11 +48,10 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
     setGeneratedQuestions([]);
 
     try {
-      // Create fresh instance to ensure up-to-date API key
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `Generate ${count} professional radiotherapy recruitment exam multiple-choice questions for the chapter: "${topic}". 
       Ensure questions follow medical standards (ICRP, ICRU, IAEA). 
-      Include 4 options for each question. 
+      Include exactly 4 options for each question. 
       The explanation should be conceptual and concise.`;
 
       const response = await ai.models.generateContent({
@@ -82,16 +80,22 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
         },
       });
 
-      const data = JSON.parse(response.text || '[]');
+      const rawText = response.text || '';
+      // Sanitize response: sometimes AI wraps JSON in markdown blocks even if mimeType is set
+      const jsonMatch = rawText.match(/```json\s*([\s\S]*?)\s*```/) || rawText.match(/```\s*([\s\S]*?)\s*```/);
+      const jsonString = jsonMatch ? jsonMatch[1] : rawText;
+      
+      const data = JSON.parse(jsonString.trim() || '[]');
+      if (!Array.isArray(data)) throw new Error("Invalid response format");
       setGeneratedQuestions(data);
     } catch (err: any) {
-      console.error(err);
+      console.error("AI Generation Error:", err);
       const errorMessage = err.message || '';
       if (errorMessage.includes("Requested entity was not found")) {
         setError('API configuration issue. Please re-select your API key project.');
-        setHasKey(false); // Reset key selection state to prompt re-selection
+        setHasKey(false);
       } else {
-        setError('Connection Error: Failed to generate questions. Please check your network or try again.');
+        setError(`Connection Error: ${errorMessage.slice(0, 100) || 'Failed to reach AI service'}`);
       }
     } finally {
       setLoading(false);

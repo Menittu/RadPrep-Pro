@@ -1,7 +1,8 @@
+
 import { Dexie, type Table } from 'dexie';
 import { Question, TestResult, TestSession } from './types';
 
-// Fix: Use named export for Dexie to ensure proper type inheritance and availability of methods like version().
+// Using named import for Dexie to ensure the class and its members like 'version' are correctly inherited.
 export class RadPrepDatabase extends Dexie {
   questions!: Table<Question>;
   results!: Table<TestResult>;
@@ -9,7 +10,7 @@ export class RadPrepDatabase extends Dexie {
 
   constructor() {
     super('RadPrepDB');
-    // Dexie schema definition using versioning for data migrations and table setup.
+    // Schema definition for Dexie
     this.version(3).stores({
       questions: '++id, text, chapter, isBookmarked',
       results: '++id, date, chapterName',
@@ -17,7 +18,6 @@ export class RadPrepDatabase extends Dexie {
     });
   }
 
-  // Helper to bulk add questions with a fallback chapter name if none is provided in the source.
   async addQuestions(fallbackChapterName: string, questions: any[]) {
     const formattedQuestions = questions.map((q) => {
       return {
