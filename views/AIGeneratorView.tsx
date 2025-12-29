@@ -19,10 +19,17 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
 
   useEffect(() => {
     const checkKey = async () => {
-      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
-        const selected = await window.aistudio.hasSelectedApiKey();
-        setHasKey(selected);
+      // Use optional chaining to safely check for aistudio
+      if (window.aistudio?.hasSelectedApiKey) {
+        try {
+          const selected = await window.aistudio.hasSelectedApiKey();
+          setHasKey(selected);
+        } catch (e) {
+          console.error("Error checking API key selection status:", e);
+          setHasKey(false);
+        }
       } else {
+        // Fallback for local development or environments without the injection
         setHasKey(true);
       }
     };
@@ -30,9 +37,14 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
   }, []);
 
   const handleOpenKeySelector = async () => {
-    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
-      await window.aistudio.openSelectKey();
-      setHasKey(true);
+    if (window.aistudio?.openSelectKey) {
+      try {
+        await window.aistudio.openSelectKey();
+        // Race condition: Assume success after triggering the dialog to allow the user to proceed
+        setHasKey(true);
+      } catch (e) {
+        console.error("Error opening key selector:", e);
+      }
     }
   };
 
@@ -48,6 +60,7 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
     setGeneratedQuestions([]);
 
     try {
+      // Rule: Always create a new GoogleGenAI instance right before making an API call
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `Generate ${count} professional radiotherapy recruitment exam multiple-choice questions for the chapter: "${topic}". 
       Ensure questions follow medical standards (ICRP, ICRU, IAEA). 
@@ -81,21 +94,23 @@ const AIGeneratorView: React.FC<AIGeneratorViewProps> = ({ onImport }) => {
       });
 
       const rawText = response.text || '';
-      // Sanitize response: sometimes AI wraps JSON in markdown blocks even if mimeType is set
+      // Sanitize response: handle cases where AI wraps JSON in markdown blocks
       const jsonMatch = rawText.match(/```json\s*([\s\S]*?)\s*```/) || rawText.match(/```\s*([\s\S]*?)\s*```/);
       const jsonString = jsonMatch ? jsonMatch[1] : rawText;
       
       const data = JSON.parse(jsonString.trim() || '[]');
-      if (!Array.isArray(data)) throw new Error("Invalid response format");
+      if (!Array.isArray(data)) throw new Error("API returned an invalid data structure.");
       setGeneratedQuestions(data);
     } catch (err: any) {
       console.error("AI Generation Error:", err);
       const errorMessage = err.message || '';
+      
+      // Rule: If request fails with "Requested entity was not found.", reset key selection
       if (errorMessage.includes("Requested entity was not found")) {
-        setError('API configuration issue. Please re-select your API key project.');
+        setError('API project configuration issue. Please re-select your API key project.');
         setHasKey(false);
       } else {
-        setError(`Connection Error: ${errorMessage.slice(0, 100) || 'Failed to reach AI service'}`);
+        setError(`Connection Error: ${errorMessage.slice(0, 150) || 'Failed to reach AI service. Please try again later.'}`);
       }
     } finally {
       setLoading(false);

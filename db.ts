@@ -1,8 +1,8 @@
 
-import { Dexie, type Table } from 'dexie';
+import Dexie, { type Table } from 'dexie';
 import { Question, TestResult, TestSession } from './types';
 
-// Using named import for Dexie to ensure the class and its members like 'version' are correctly inherited.
+// Using default import for Dexie to ensure the class and its members like 'version' are correctly recognized.
 export class RadPrepDatabase extends Dexie {
   questions!: Table<Question>;
   results!: Table<TestResult>;
