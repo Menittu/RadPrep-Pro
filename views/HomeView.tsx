@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { PlayCircle, Clock, Target, BrainCircuit, Activity, BookOpen, GraduationCap, ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
+import { PlayCircle, Clock, Target, BookOpen, GraduationCap, ArrowRight, Sparkles } from 'lucide-react';
 import { db } from '../db';
 import { TestMode, TestSession } from '../types';
 

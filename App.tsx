@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Menu, X, Sun, Moon, Home, BookOpen, Search, BarChart2, Settings } from 'lucide-react';
+import { Menu, X, Sun, Moon, Home, BookOpen, Search, BarChart2, Settings, Sparkles } from 'lucide-react';
 import HomeView from './views/HomeView';
 import TestRoomView from './views/TestRoomView';
 import ChapterManager from './views/ChapterManager';
 import SearchView from './views/SearchView';
 import AnalyticsView from './views/AnalyticsView';
 import SummaryView from './views/SummaryView';
+import AIGeneratorView from './views/AIGeneratorView';
 import { db } from './db';
 
 const App: React.FC = () => {
@@ -25,7 +26,6 @@ const App: React.FC = () => {
     }
   }, [darkMode]);
 
-  // Listen for progress updates from the test view
   useEffect(() => {
     const handleProgress = (e: any) => {
       setProgress(e.detail);
@@ -49,7 +49,6 @@ const App: React.FC = () => {
     <HashRouter>
       <div className={`min-h-screen flex flex-col transition-m3`}>
         
-        {/* M3 Top App Bar */}
         <header className="h-16 sticky top-0 z-50 bg-[#F4FBFA]/90 dark:bg-[#0E1414]/90 backdrop-blur-md px-4 flex flex-col justify-center border-b border-[#DAE4E4] dark:border-[#3F4948]">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
@@ -63,7 +62,6 @@ const App: React.FC = () => {
             </button>
           </div>
 
-          {/* Integrated Title Bar Progress Indicator */}
           {progress && (
             <div className="absolute bottom-0 left-0 w-full h-1 bg-[#9CF1F3] dark:bg-[#3F4948]">
               <div 
@@ -74,12 +72,10 @@ const App: React.FC = () => {
           )}
         </header>
 
-        {/* Sidebar Backdrop */}
         {sidebarOpen && (
           <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm" onClick={closeSidebar}></div>
         )}
 
-        {/* M3 Navigation Drawer */}
         <aside className={`fixed top-0 left-0 bottom-0 z-50 w-80 bg-[#F4FBFA] dark:bg-[#0E1414] shadow-2xl transform transition-transform duration-400 ease-[cubic-bezier(0.2,0,0,1)] ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} rounded-r-[28px]`}>
           <div className="h-16 px-6 flex items-center justify-between border-b dark:border-[#3F4948]">
             <h2 className="font-medium text-sm text-[#3F4948] dark:text-[#BEC8C8] uppercase tracking-wider">Menu</h2>
@@ -87,13 +83,14 @@ const App: React.FC = () => {
           </div>
           <nav className="p-4 space-y-1">
             <SidebarItem icon={<Home size={22}/>} label="Dashboard" to="/" onClick={closeSidebar} />
+            <SidebarItem icon={<Sparkles size={22}/>} label="AI Research Lab" to="/ai-lab" onClick={closeSidebar} />
             <SidebarItem icon={<Search size={22}/>} label="Search Engine" to="/search" onClick={closeSidebar} />
             <SidebarItem icon={<BarChart2 size={22}/>} label="Analytics" to="/analytics" onClick={closeSidebar} />
             <SidebarItem icon={<Settings size={22}/>} label="Manage Chapters" to="/manage" onClick={closeSidebar} />
             
             <div className="pt-6 mt-6 border-t dark:border-[#3F4948]">
               <p className="px-4 mb-4 text-xs font-semibold text-[#00696B] dark:text-[#80D4D6] uppercase tracking-widest">Chapters</p>
-              <div className="space-y-1 max-h-[50vh] overflow-y-auto no-scrollbar">
+              <div className="space-y-1 max-h-[45vh] overflow-y-auto no-scrollbar">
                 {chapters.length === 0 ? (
                   <p className="px-4 text-sm text-gray-400 italic">No data found.</p>
                 ) : (
@@ -109,6 +106,7 @@ const App: React.FC = () => {
         <main className="flex-1 container mx-auto px-4 py-6 md:py-10 max-w-4xl">
           <Routes>
             <Route path="/" element={<HomeView />} />
+            <Route path="/ai-lab" element={<AIGeneratorView onImport={loadChapters} />} />
             <Route path="/search" element={<SearchView />} />
             <Route path="/analytics" element={<AnalyticsView />} />
             <Route path="/manage" element={<ChapterManager onUpdate={loadChapters} />} />

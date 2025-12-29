@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bookmark, Info, Send } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bookmark, Info } from 'lucide-react';
 import { db } from '../db';
 import { Question, TestSession, TestMode } from '../types';
 
